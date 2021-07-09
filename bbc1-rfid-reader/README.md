@@ -9,12 +9,12 @@ This file includes the following class(es):
 
 ### simple_rfid_reader_drv.py
 This file includes the following class(es):
-* **SimpleRfidReader** : the simplest possible abstract data type for general RFID readers that allows callers to read tags.
+* **SimpleRfidReader** : the simplest possible abstract data type and abstract class for general RFID readers that allows callers to read tags.
 
 ### smart_rfid_reader_drv.py
 This file includes the following class(es):
-* **SmartRfidReader** : RFID reader with signing capability.
 * **SimpleRfidReaderSimulator** : simulates a simple RFID reader.
+* **SmartRfidReader** : RFID reader with signing capability.
 
 ## How to Use this driver library
 Coming soon.
