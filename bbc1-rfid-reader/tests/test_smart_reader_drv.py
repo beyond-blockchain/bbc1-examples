@@ -13,6 +13,30 @@ from bbc1.lib.smart_rfid_reader_drv import RfidReadout, SmartRfidReader
 from bbc1.lib.smart_rfid_reader_drv import Location
 
 
+def test_readout():
+
+    dic1 = {
+        "key": 1,
+        "tag": "E28338002000010000750233",
+        "timestamp": 1630727723,
+        "location": {
+            "latitude": "3569.1741N",
+            "longitude": "13977.0859E",
+            "altitude": "5"
+        },
+        "data": "",
+        "algo": 2,
+        "sig": "1bff4a4d5c81603875e0b795731ce2fb86c6a770768919811b6959fb1fd7ab92c9eb5eb06e4163b1c1035d7b1ae913828b7b670c0555b8e90ba5c49fd198ed13",
+        "pubkey": "04c7c6885a3bb9349c2fb77be8abbbdc375177751c2e2addadddf3798e35afe0449b9636155ac5f0021de4d4e6583d281789ff8789cd933ba6641d9765a84e7a68"
+    }
+
+    readout = RfidReadout.from_dict(dic1)
+
+    dic2 = readout.to_dict()
+
+    assert dic1 == dic2
+
+
 def test_smart_rfid_reader():
 
     readers = [
