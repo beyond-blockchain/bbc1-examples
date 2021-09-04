@@ -14,6 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+import binascii
 import hashlib
 import time
 
@@ -31,12 +32,28 @@ class Location:
 
 
     @staticmethod
-    def from_serialized(data):
+    def from_serialized_data(ptr, data):
         pass # FIXME
 
 
     def serialize(self):
-        dat = bytearray(self.latitude.encode())
+        dat = bytearray()
+        string = self.latitude.encode()
+        dat.extend(bbclib_binary.to_1byte(len(string)))
+        dat.extend(string)
+        string = self.longitude.encode()
+        dat.extend(bbclib_binary.to_1byte(len(string)))
+        dat.extend(string)
+        string = self.altitude.encode()
+        dat.extend(bbclib_binary.to_1byte(len(string)))
+        dat.extend(string)
+
+        return bytes(dat)
+
+
+    def serialize_for_digest(self):
+        dat = bytearray()
+        dat.extend(self.latitude.encode())
         dat.extend(self.longitude.encode())
         dat.extend(self.altitude.encode())
 
@@ -54,9 +71,23 @@ class RfidReadout:
 
 
     @staticmethod
+    def from_dict(dic):
+        ld = dic['location']
+        readout = RfidReadout(dic['key'], dic['tag'], dic['timestamp'],
+                Location(ld['latitude'], ld['longitude'], ld['altitude']),
+                dic['data'])
+        readout.algo = dic['algo']
+        readout.sig = binascii.a2b_hex(dic['sig'])
+        readout.pubkey = binascii.a2b_hex(dic['pubkey'])
+
+        return readout
+
+
+    @staticmethod
     def from_tuple(dataTuple):
-        iRandom, idTag, timestamp, location, dataTag, sig, pubkey = dataTuple
-        readout = RfidReadout(iRandom, idTag, timestamp, location, dataTag)
+        x, idTag, timestamp, location, dataTag, algo, sig, pubkey = dataTuple
+        readout = RfidReadout(x, idTag, timestamp, location, dataTag)
+        readout.algo = algo
         readout.sig = sig
         readout.pubkey = pubkey
 
@@ -64,24 +95,31 @@ class RfidReadout:
 
 
     @staticmethod
-    def from_serialized(data):
+    def from_serialized_data(ptr, data):
         pass # FIXME
 
 
-    def get_signed_data(self):
+    def get_digest_1(self):
         dat = bytearray(bbclib_binary.to_4byte(self.iRandom))
         dat.extend(self.idTag.encode())
 
-        digest0 = hashlib.sha256(bytes(dat)).digest()
+        return hashlib.sha256(bytes(dat)).digest()
 
+
+    def get_digest_2(self):
         dat = bytearray(bbclib_binary.to_8byte(self.timestamp))
-        dat.extend(self.location.serialize())
+        dat.extend(self.location.serialize_for_digest())
         dat.extend(self.dataTag.encode())
 
-        digest1 = hashlib.sha256(bytes(dat)).digest()
+        return hashlib.sha256(bytes(dat)).digest()
 
-        dat = bytearray(digest0)
-        dat.extend(digest1)
+
+    def get_signed_data(self):
+        digest1 = self.get_digest_1()
+        digest2 = self.get_digest_2()
+
+        dat = bytearray(digest1)
+        dat.extend(digest2)
 
         return (hashlib.sha256(bytes(dat)).digest())
 
@@ -91,8 +129,26 @@ class RfidReadout:
 
 
     def sign(self, keypair):
+        self.algo = keypair.curvetype
         self.sig = keypair.sign(self.get_signed_data())
         self.pubkey = keypair.public_key
+
+
+    def to_dict(self):
+        return {
+            'key': self.iRandom,
+            'tag': self.idTag,
+            'timestamp': self.timestamp,
+            'location': {
+                'latitude': self.location.latitude,
+                'longitude': self.location.longitude,
+                'altitude': self.location.altitude
+            },
+            'data': self.dataTag,
+            'algo': self.algo,
+            'sig': binascii.b2a_hex(self.sig).decode(),
+            'pubkey': binascii.b2a_hex(self.pubkey).decode()
+        }
 
 
     def to_tuple(self):
@@ -102,13 +158,14 @@ class RfidReadout:
             self.timestamp,
             self.location,
             self.dataTag,
+            self.algo,
             self.sig,
             self.pubkey
         )
 
 
-    def verify(self, key_type=bbclib.DEFAULT_CURVETYPE):
-        keypair = bbclib.KeyPair(curvetype=key_type, pubkey = self.pubkey)
+    def verify(self):
+        keypair = bbclib.KeyPair(curvetype=self.algo, pubkey = self.pubkey)
 
         return keypair.verify(self.get_signed_data(), self.sig)
 
@@ -131,11 +188,17 @@ class SimpleRfidReaderSimulator(SimpleRfidReader):
 
 class SmartRfidReader:
 
-    def __init__(self, iRandom, reader, key_type=bbclib.DEFAULT_CURVETYPE):
+    def __init__(self, iRandom, reader, key_type=bbclib.DEFAULT_CURVETYPE,
+            keypair=None):
         self._iRandom = iRandom
         self._reader = reader
-        self._keypair = bbclib.KeyPair(curvetype=key_type)
-        self._keypair.generate()
+
+        if keypair is None:
+            self._keypair = bbclib.KeyPair(curvetype=key_type)
+            self._keypair.generate()
+
+        else:
+            self._keypair = keypair
 
 
     def close(self):
@@ -143,8 +206,12 @@ class SmartRfidReader:
 
 
     @staticmethod
-    def from_serialized(data, reader):
+    def from_serialized_data(ptr, data, reader):
         pass # FIXME
+
+
+    def get_key_type(self):
+        return self._keypair.curvetype
 
 
     def get_public_key(self):
