@@ -20,6 +20,7 @@ Evidence service (BBc-1 App) : the following set of API is provided:
 * py-bbclib >= 1.6
 * bbc1-lib-std >= 0.19
 * bbc1-lib-registry >= 0.8
+* bbc1-rfid-reader >= 0.2
 * ledger_subsystem >= 0.15
 * Flask >= 1.1.2
 
