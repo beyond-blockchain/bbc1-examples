@@ -26,7 +26,18 @@ BANK_USER = '3'
 # All values are in hexadecimal.
 #
 
-# Temperature : 10x value in Celsius is stored in 1 word.
+# Acceleration : 100x values stored in 1 word (2 bytes) each.
+OFFSET_LAPIS_ACCELERATION_X = '14'
+OFFSET_LAPIS_ACCELERATION_Y = '15'
+OFFSET_LAPIS_ACCELERATION_Z = '16'
+
+# Atmospheric pressure : value in Pa (100x hPa) is stored in 3 bytes.
+OFFSET_LAPIS_ATMOSPHERIC_PRESSURE = '18'
+
+# Humidity : percentage is stored in 1 word (2 bytes).
+OFFSET_LAPIS_HUMIDITY = '17'
+
+# Temperature : 10x value in Celsius is stored in 1 word (2 bytes).
 OFFSET_LAPIS_TEMPERATURE = '13'
 
 
