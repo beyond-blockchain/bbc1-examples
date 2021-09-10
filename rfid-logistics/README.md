@@ -37,27 +37,27 @@ You need to pip-install bbc1 and Flask. Others (BBc-1 libraries bbc1-lib-?? and 
 ```
 {
   "key": 1,
-  "tag": "E28338002000010000750233",
-  "timestamp": 1630727723,
+  "tag": "E283380020000100000201C0",
+  "timestamp": 1631233757,
   "location": {
     "latitude": "3569.1741N",
     "longitude": "13977.0859E",
     "altitude": "5"
   },
-  "data": "",
+  "data": "010C",
   "algo": 2,
-  "sig": "1bff4a4d5c81603875e0b795731ce2fb86c6a770768919811b6959fb1fd7ab92c9eb5eb06e4163b1c1035d7b1ae913828b7b670c0555b8e90ba5c49fd198ed13",
-  "pubkey": "04c7c6885a3bb9349c2fb77be8abbbdc375177751c2e2addadddf3798e35afe0449b9636155ac5f0021de4d4e6583d281789ff8789cd933ba6641d9765a84e7a68"
+  "sig": "e312d1fcefd2e5d2de15314de73227d9be7c935e1aa648fff2981f8c38a61e2f3ad50710eb0c2ffc46e3a998f1f041e41c3797f03be7a9edb34e92ea9c20fd35",
+  "pubkey": "04844e144d23aa63403b22f5f8365a0c9e6e3bfec31a59b90aa561bbd3bf6bfe541a49838a52e5957266c275efbf3b030db9ac5f2d31adcecfa9751c260ab03453"
 }
 ```
 **Sample evidence** (of the above readout)
 ```
 {
-  "digest_1": "651e24bae1268e2d0913ad503ae052bf21b5e62792e670fdc86a617d07f4a1a3",
-  "digest_2": "d98a3742a3e33d0c14b29fe5d3b1dfaa43d5a77a7e4f889503f33ea6e99f2575",
+  "digest_1": "a90d9c56e9b17c3d8e601f4997d662ab836a0561041be912a170f5e1effc0735",
+  "digest_2": "74fc4ccba4b20e250a545dd86d3111bd57aa707d836219940b67bec4a5c48cf3",
   "algo": "ecdsa-p256v1",
-  "sig": "1bff4a4d5c81603875e0b795731ce2fb86c6a770768919811b6959fb1fd7ab92c9eb5eb06e4163b1c1035d7b1ae913828b7b670c0555b8e90ba5c49fd198ed13",
-  "pubkey": "04c7c6885a3bb9349c2fb77be8abbbdc375177751c2e2addadddf3798e35afe0449b9636155ac5f0021de4d4e6583d281789ff8789cd933ba6641d9765a84e7a68"
+  "sig": "e312d1fcefd2e5d2de15314de73227d9be7c935e1aa648fff2981f8c38a61e2f3ad50710eb0c2ffc46e3a998f1f041e41c3797f03be7a9edb34e92ea9c20fd35",
+  "pubkey": "04844e144d23aa63403b22f5f8365a0c9e6e3bfec31a59b90aa561bbd3bf6bfe541a49838a52e5957266c275efbf3b030db9ac5f2d31adcecfa9751c260ab03453"
 }
 ```
 Specifically, the tag ID, as well as other information, is kept private from the evidence service, while the service is capable (not currently implemented as API) of making a search over "digest_1" values (which is the digest of "key" and "tag" values concatinated).
@@ -65,12 +65,13 @@ Specifically, the tag ID, as well as other information, is kept private from the
 **Sample public key certificate**
 ```
 {
-  "public_key": "04c7c6885a3bb9349c2fb77be8abbbdc375177751c2e2addadddf3798e35afe0449b9636155ac5f0021de4d4e6583d281789ff8789cd933ba6641d9765a84e7a68",
-  "issued_at": 1630727615,
-  "expires_at": 1662263615,
+  "public_key": "04844e144d23aa63403b22f5f8365a0c9e6e3bfec31a59b90aa561bbd3bf6bfe541a49838a52e5957266c275efbf3b030db9ac5f2d31adcecfa9751c260ab03453",
+  "subject": "foo: a CDEX CRU-920MJ reader",
+  "issued_at": 1631233689,
+  "expires_at": 1662769689,
   "algo": "ecdsa-p256v1",
-  "sig": "bfb30eee8b30546229a633fa4800ac310c2cf6eff1a51a4a8fec1baaded9afe8ccbfba083fb5785986920bbeadf15d55aeac5cb24150687ba808d5c36f2a7040",
-  "pubkey": "0440048c9aac3040189a0f2c6eb4ef164a8b012f40e0a4fde9e0065a39a4410c3820f9a99078ce66f355157fd755612945f14a06b1a0f65fef3cbd852b8137442f"
+  "sig": "c0ff25551931599f47995268416a723093dc3a76f59a178ca49b6c0fc6d13931777f8a6a50c4886fc910e1312138a30f0dc74f7c85a62242d7670e59a20e6f26",
+  "pubkey": "0407c743525244017a0e0d26e75cccb5106f9f8d85feebebd253a9191b5e144f5f27d914564cef54c729a9ae0f2d4fb11c7d90ac1f4530c6263f4ca6cd17fc9cb1"
 }
 ```
 
