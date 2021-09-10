@@ -105,6 +105,14 @@ def search_readouts():
         readout['signature-algorithm'] = LIST_KEY_TYPES[readout['algo']]
         readout['date-time'] = str(datetime.fromtimestamp(
                 readout['timestamp']))
+
+        if len(readout['data']) > 0:
+            x = int(readout['data'], 16)
+            if x > 0x7fff:
+                x = ~(x ^ 0xffff)
+            if x > -900 and x < 900:
+                readout['temperature'] = str(x / 10)
+
         aReadout.append((readout['timestamp'], json.dumps(readout, indent=2)))
 
     return render_template('logi/readouts.html', readouts=aReadout)

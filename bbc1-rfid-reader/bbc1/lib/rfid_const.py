@@ -14,24 +14,20 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-from abc import ABC, abstractmethod
-from typing import List
+#
+# EPCglobal C1G2
+#
+BANK_EPC  = '1'
+BANK_TID  = '2'
+BANK_USER = '3'
 
-class SimpleRfidReader(ABC):
+# 
+# LAPIS Technology RFID data logger
+# All values are in hexadecimal.
+#
 
-    @abstractmethod
-    def close(self) -> None:
-        pass
-
-
-    @abstractmethod
-    def read(self) -> List[str]:
-        pass
-
-
-    @abstractmethod
-    def read_data(self, epc, passwd, bank, offset, length) -> str:
-        pass
+# Temperature : 10x value in Celsius is stored in 1 word.
+OFFSET_LAPIS_TEMPERATURE = '13'
 
 
-# end of simple_rfid_reader_drv.py
+# end of rfid_const.py

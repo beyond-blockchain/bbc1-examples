@@ -19,6 +19,7 @@ import hashlib
 import time
 
 from bbc1.core import bbclib
+from bbc1.lib.rfid_const import BANK_USER
 from bbc1.lib.simple_rfid_reader_drv import SimpleRfidReader
 from bbclib.libs import bbclib_binary
 
@@ -174,6 +175,7 @@ class SimpleRfidReaderSimulator(SimpleRfidReader):
 
     def __init__(self, path):
         self._f = open(path)
+        self._dic = dict()
 
 
     def close(self):
@@ -181,17 +183,35 @@ class SimpleRfidReaderSimulator(SimpleRfidReader):
 
 
     def read(self):
-        s = self._f.readline().rstrip('\n')
+        sLine = self._f.readline().rstrip('\n')
+        aTags = []
 
-        return s.split(',') if len(s) > 0 else []
+        aS = [] if len(sLine) <= 0 else sLine.split(',')
+
+        for s in aS:
+            epc_data = s.split('/')
+            if len(epc_data) > 1:
+                self._dic[epc_data[0]] = epc_data[1]
+            aTags.append(epc_data[0])
+
+        return aTags
+
+
+    def read_data(self, epc, passwd, bank, offset, length):
+        return self._dic[epc] if epc in self._dic else ''
 
 
 class SmartRfidReader:
 
     def __init__(self, iRandom, reader, key_type=bbclib.DEFAULT_CURVETYPE,
-            keypair=None):
+            keypair=None, data_passwd='0', data_bank=BANK_USER,
+            data_offset='0', data_length='1'):
         self._iRandom = iRandom
         self._reader = reader
+        self.data_passwd = data_passwd
+        self.data_bank = data_bank
+        self.data_offset = data_offset
+        self.data_length = data_length
 
         if keypair is None:
             self._keypair = bbclib.KeyPair(curvetype=key_type)
@@ -224,8 +244,15 @@ class SmartRfidReader:
         aReadout = []
 
         for idTag in aS:
+            try:
+                dataTag = self._reader.read_data(idTag, self.data_passwd,
+                        self.data_bank, self.data_offset, self.data_length)
+
+            except:
+                continue
+
             readout = RfidReadout(self._iRandom, idTag, timestamp,
-                    self._location, '')
+                    self._location, dataTag)
             readout.sign(self._keypair)
             aReadout.append(readout.to_tuple())
 

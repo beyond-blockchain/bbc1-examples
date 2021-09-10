@@ -7,6 +7,7 @@
 #
 import datetime
 import time
+from bbc1.lib import rfid_const
 from bbc1.lib.cdexcru920mj_drv import SimpleCdexCru920Mj
 from bbc1.lib.smart_rfid_reader_drv import SimpleRfidReaderSimulator
 from bbc1.lib.smart_rfid_reader_drv import RfidReadout, SmartRfidReader
@@ -24,7 +25,7 @@ def test_readout():
             "longitude": "13977.0859E",
             "altitude": "5"
         },
-        "data": "",
+        "data": "0105",
         "algo": 2,
         "sig": "1bff4a4d5c81603875e0b795731ce2fb86c6a770768919811b6959fb1fd7ab92c9eb5eb06e4163b1c1035d7b1ae913828b7b670c0555b8e90ba5c49fd198ed13",
         "pubkey": "04c7c6885a3bb9349c2fb77be8abbbdc375177751c2e2addadddf3798e35afe0449b9636155ac5f0021de4d4e6583d281789ff8789cd933ba6641d9765a84e7a68"
@@ -40,13 +41,14 @@ def test_readout():
 def test_smart_rfid_reader():
 
     readers = [
-        ('CDEX CRU-920MJ', SimpleCdexCru920Mj('/dev/tty.usbmodem15C1200031')),
+        ('CDEX CRU-920MJ', SimpleCdexCru920Mj('/dev/tty.usbmodem19K1400111')),
         ('Simulator', SimpleRfidReaderSimulator('sim-data.txt'))
     ]
 
     for (name, reader) in readers:
         print('Base reader: {0}'.format(name))
-        smartReader = SmartRfidReader(12345678, reader)
+        smartReader = SmartRfidReader(12345678, reader,
+                data_offset=rfid_const.OFFSET_LAPIS_TEMPERATURE)
         smartReader.set_location(
                 Location('3568.0959N', '13976.7307E', '-29.19'))
 
@@ -60,7 +62,13 @@ def test_smart_rfid_reader():
             for t in aReadout:
                 readout = RfidReadout.from_tuple(t)
                 assert readout.verify() == True
-                print('{0} at {1}'.format(readout.idTag,
+                data = readout.dataTag
+                if len(data) > 0:
+                    x = int(data, 16)
+                    if x > 0x7fff:
+                        x = ~(x ^ 0xffff)
+                    data = str(x / 10)
+                print('{0}/{1} at {2}'.format(readout.idTag, data,
                         datetime.datetime.fromtimestamp(readout.timestamp)))
 
         smartReader.close()

@@ -21,6 +21,14 @@ from bbc1.lib.simple_rfid_reader_drv import SimpleRfidReader
 CMD_C1GEN2I  = b'C1GEN2I 0,1\r\n'
 CMD_C1GEN2S  = b'C1GEN2S 0,0,1,0,0,0\r\n'
 CMD_C1GEN2XX = b'C1GEN2XX 0,0\r\n'
+CMD_C1GEN2RA = 'C1GEN2RA {0},{1},{2},{3},{4},{5}\r\n'
+
+# {0} : session ('0')
+# {1} : EPC
+# {2} : access password ('0')
+# {3} : bank ('1' : EPC, '2' : TID, '3' : User)
+# {4} : offset (in words)
+# {5} : length (in words)
 
 CMD_RF_A         = b'RFA\r\n'
 CMD_RF_AM        = b'RFAM\r\n'
@@ -64,6 +72,16 @@ class SimpleCdexCru920Mj(SimpleRfidReader):
         aS = s.split(',')
 
         return aS[1:len(aS) - 1]
+
+
+    def read_data(self, epc, passwd, bank, offset, length):
+        self._ser.write(CMD_C1GEN2RA.format('0', epc, passwd, bank,
+                offset, length).encode())
+        s = self.__read()
+
+        aS = s.split(',')
+
+        return aS[1]
 
 
     def __read(self):

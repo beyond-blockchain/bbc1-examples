@@ -20,7 +20,7 @@ Evidence service (BBc-1 App) : the following set of API is provided:
 * py-bbclib >= 1.6
 * bbc1-lib-std >= 0.19
 * bbc1-lib-registry >= 0.8
-* bbc1-rfid-reader >= 0.2
+* bbc1-rfid-reader >= 0.3
 * ledger_subsystem >= 0.15
 * Flask >= 1.1.2
 
@@ -129,3 +129,5 @@ This creates a vendor keypair and a configuration file 'config.json'. Other than
 * **remove** NAME : removes the specified reader.
 * **run** NAME : runs the specified reader; logger messages are put to a file named 'NAME.log'; execution can be stopped by a keyboard interrupt (ctrl+C).
 * **verify** {NAME, vendor}: verifies the certificate for a reader (signed by the vendor) or the vendor (self-signed).
+
+By default, the tool creates readers that read temperaturs as stored data assuming that the tags are RFID data logger by LAPIS Technology, where the tags are not password-protected. You can change the arguments for reading data by specifying options upon using **new** command. See **--help** for detail.
