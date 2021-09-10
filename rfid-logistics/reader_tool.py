@@ -29,7 +29,7 @@ import time
 import urllib.parse
 import xml.etree.ElementTree as ET
 from bbc1.core import bbclib
-from bbc1.lib import registry_lib
+from bbc1.lib import registry_lib, rfid_const
 from bbc1.lib.cdexcru920mj_drv import SimpleCdexCru920Mj
 from bbc1.lib.smart_rfid_reader_drv import SimpleRfidReaderSimulator
 from bbc1.lib.smart_rfid_reader_drv import RfidReadout, SmartRfidReader
@@ -58,6 +58,9 @@ def argument_parser():
     subparsers = argparser.add_subparsers(dest="command_type", help='commands')
 
     # options
+    argparser.add_argument('-b', '--bank', type=str,
+            default=rfid_const.BANK_USER,
+            help='bank of tag memory for data')
     argparser.add_argument('-c', '--config', type=str,
             default=PATH_CONFIG_JSON_DEFAULT,
             help='name of the config file')
@@ -70,6 +73,15 @@ def argument_parser():
     argparser.add_argument('-k', '--key', type=int,
             default=KEY_DEFAULT,
             help='shared key number between RFID service and clients')
+    argparser.add_argument('-l', '--length', type=str,
+            default='1',
+            help='length to read tag memory for data')
+    argparser.add_argument('-o', '--offset', type=str,
+            default=rfid_const.OFFSET_LAPIS_TEMPERATURE,
+            help='offset to read tag memory for data')
+    argparser.add_argument('-p', '--passwd', type=str,
+            default='0',
+            help='access password for tag memory for data')
     argparser.add_argument('-r', '--rfid_api', type=str,
             default=PREFIX_RFID_SERVICE_API_DEFAULT,
             help='URL prefix of the RFID service API')
@@ -163,6 +175,17 @@ def create_reader(dic, args):
     dReader['longitude'] = args.longitude
     dReader['altitude'] = args.altitude
 
+    sType = args.reader_type
+    if sType == 'cdexcru920mj':
+        sType = 'CDEX CRU-920MJ'
+
+    dReader['subject'] = '{0}: a {1} reader'.format(args.name, sType)
+
+    dReader['bank'] = args.bank
+    dReader['passwd'] = args.passwd
+    dReader['offset'] = args.offset
+    dReader['length'] = args.length
+
     keypair = bbclib.KeyPair(curvetype=bbclib.DEFAULT_CURVETYPE)
     keypair.generate()
     create_and_register_certificate(keypair, get_keypair(dic['vendor']),
@@ -240,6 +263,7 @@ def dict2xml_element(element, value):
 def get_certificate_dict(dic, vdic):
     return {
         'public_key': dic['public_key'],
+        'subject': dic['subject'],
         'issued_at': dic['issued_at'],
         'expires_at': dic['expires_at'],
         'algo': LIST_KEY_TYPES[vdic['algo']],
@@ -261,6 +285,7 @@ def get_readout_dict(readout):
 def get_certifying(dic):
     return {
         'public_key': dic['public_key'],
+        'subject': dic['subject'],
         'issued_at': dic['issued_at'],
         'expires_at': dic['expires_at']
     }
@@ -368,7 +393,9 @@ def run_reader(dic, args):
         return
 
     smartReader = SmartRfidReader(dic['rfid-service']['key'], reader,
-            keypair=get_keypair(dReader))
+            keypair=get_keypair(dReader), data_passwd=dReader['passwd'],
+            data_bank=dReader['bank'], data_offset=dReader['offset'],
+            data_length=dReader['length'])
     smartReader.set_location(Location(dReader['latitude'],
             dReader['longitude'], dReader['altitude']))
 
@@ -385,7 +412,8 @@ def run_reader(dic, args):
             for t in aReadout:
                 readout = RfidReadout.from_tuple(t)
                 assert readout.verify() == True # testing just in case
-                logger.info('{0} at {1}'.format(readout.idTag,
+                logger.info('{0}/{1} at {2}'.format(readout.idTag,
+                        readout.dataTag,
                         datetime.datetime.fromtimestamp(readout.timestamp)))
 
                 dEvi = get_readout_dict(readout)
@@ -428,6 +456,7 @@ def setup_config(args):
     dConfig = dict()
 
     dic = dict()
+    dic['subject'] = 'An RFID vendor'
     keypair = bbclib.KeyPair(curvetype=bbclib.DEFAULT_CURVETYPE)
     keypair.generate()
     create_and_register_certificate(keypair, keypair, dic, dic, args)
