@@ -55,6 +55,13 @@ OFFSET_ATMOSPHERIC_PRESSURE = int(
 OFFSET_HUMIDITY = int(rfid_const.OFFSET_LAPIS_HUMIDITY, 16)
 OFFSET_TEMPERATURE = int(rfid_const.OFFSET_LAPIS_TEMPERATURE, 16)
 
+O_ACCELERATION_X = (OFFSET_ACCELERATION_X - OFFSET_TEMPERATURE) * 4
+O_ACCELERATION_Y = (OFFSET_ACCELERATION_Y - OFFSET_TEMPERATURE) * 4
+O_ACCELERATION_Z = (OFFSET_ACCELERATION_Z - OFFSET_TEMPERATURE) * 4
+O_ATMOSPHERIC_PRESSURE = (OFFSET_ATMOSPHERIC_PRESSURE - OFFSET_TEMPERATURE) * 4
+O_HUMIDITY = (OFFSET_HUMIDITY - OFFSET_TEMPERATURE) * 4
+O_TEMPERATURE = (OFFSET_TEMPERATURE - OFFSET_TEMPERATURE) * 4
+
 
 logi = Blueprint('logi', __name__, template_folder='templates',
         static_folder='./static')
@@ -127,26 +134,26 @@ def search_readouts():
         # if data is 7 words (16bit * 7), extracts all relevant data.
         if len(data) == (7 * 4):
             # temperature (Celsius)
-            o = (OFFSET_TEMPERATURE - OFFSET_TEMPERATURE) * 4
+            o = O_TEMPERATURE
             x = get_signed_16bit_value(int(data[o:o+4], 16)) / 10
             readout['temperature'] = x
 
             # acceleration (x,y,z in m/s^2, perhaps)
-            o = (OFFSET_ACCELERATION_X - OFFSET_TEMPERATURE) * 4
+            o = O_ACCELERATION_X
             x = get_signed_16bit_value(int(data[o:o+4], 16)) / 100
-            o = (OFFSET_ACCELERATION_Y - OFFSET_TEMPERATURE) * 4
+            o = O_ACCELERATION_Y
             y = get_signed_16bit_value(int(data[o:o+4], 16)) / 100
-            o = (OFFSET_ACCELERATION_Z - OFFSET_TEMPERATURE) * 4
+            o = O_ACCELERATION_Z
             z = get_signed_16bit_value(int(data[o:o+4], 16)) / 100
             readout['acceleration'] = {'x': x, 'y': y, 'z': z}
 
             # humidity (%)
-            o = (OFFSET_HUMIDITY - OFFSET_TEMPERATURE) * 4
+            o = O_HUMIDITY
             x = int(data[o:o+4], 16)
             readout['humidity'] = x
 
             # atmospheric pressure (hPa)
-            o = (OFFSET_ATMOSPHERIC_PRESSURE - OFFSET_TEMPERATURE) * 4
+            o = O_ATMOSPHERIC_PRESSURE
             x = int(data[o:o+6], 16) / 100
             readout['atmospheric-pressure'] = x
 
