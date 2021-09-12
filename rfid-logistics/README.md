@@ -131,4 +131,4 @@ This creates a vendor keypair and a configuration file 'config.json'. Other than
 * **run** NAME : runs the specified reader; logger messages are put to a file named 'NAME.log'; execution can be stopped by a keyboard interrupt (ctrl+C).
 * **verify** {NAME, vendor}: verifies the certificate for a reader (signed by the vendor) or the vendor (self-signed).
 
-By default, the tool creates readers that read temperaturs as stored data assuming that the tags are RFID data logger by LAPIS Technology, where the tags are not password-protected. You can change the arguments for reading data by specifying options upon using **new** command. See **--help** for detail.
+By default, the tool creates readers that read temperatures, humidity, atmospheric pressure and acceleration (though not officially supported by the logger) as stored data assuming that the tags are RFID data logger by LAPIS Technology, where the tags are not password-protected. These values are displayed in the simple web app to search readouts and verify them. You can change the arguments for reading data by specifying options upon using **new** command. See **--help** for detail.

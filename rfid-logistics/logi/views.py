@@ -24,6 +24,7 @@ import requests
 import string
 import sys
 import time
+from bbc1.lib import rfid_const
 from bbc1.lib.smart_rfid_reader_drv import RfidReadout, Location
 from datetime import datetime, timedelta, timezone
 from flask import Blueprint, render_template, request, session, abort, jsonify
@@ -46,8 +47,23 @@ HEADERS = {'Content-Type': 'application/json'}
 ISO_TIMEZONE = ':00+09:00'
 
 
+OFFSET_ACCELERATION_X = int(rfid_const.OFFSET_LAPIS_ACCELERATION_X, 16)
+OFFSET_ACCELERATION_Y = int(rfid_const.OFFSET_LAPIS_ACCELERATION_Y, 16)
+OFFSET_ACCELERATION_Z = int(rfid_const.OFFSET_LAPIS_ACCELERATION_Z, 16)
+OFFSET_ATMOSPHERIC_PRESSURE = int(
+        rfid_const.OFFSET_LAPIS_ATMOSPHERIC_PRESSURE, 16)
+OFFSET_HUMIDITY = int(rfid_const.OFFSET_LAPIS_HUMIDITY, 16)
+OFFSET_TEMPERATURE = int(rfid_const.OFFSET_LAPIS_TEMPERATURE, 16)
+
+
 logi = Blueprint('logi', __name__, template_folder='templates',
         static_folder='./static')
+
+
+def get_signed_16bit_value(x):
+    if x > 0x7fff:
+        x = ~(x ^ 0xffff)
+    return x
 
 
 def make_400_error(s):
@@ -106,12 +122,39 @@ def search_readouts():
         readout['date-time'] = str(datetime.fromtimestamp(
                 readout['timestamp']))
 
-        if len(readout['data']) > 0:
-            x = int(readout['data'], 16)
-            if x > 0x7fff:
-                x = ~(x ^ 0xffff)
-            if x > -900 and x < 900:
-                readout['temperature'] = str(x / 10)
+        data = readout['data']
+
+        # if data is 7 words (16bit * 7), extracts all relevant data.
+        if len(data) == (7 * 4):
+            # temperature (Celsius)
+            o = (OFFSET_TEMPERATURE - OFFSET_TEMPERATURE) * 4
+            x = get_signed_16bit_value(int(data[o:o+4], 16)) / 10
+            readout['temperature'] = x
+
+            # acceleration (x,y,z in m/s^2, perhaps)
+            o = (OFFSET_ACCELERATION_X - OFFSET_TEMPERATURE) * 4
+            x = get_signed_16bit_value(int(data[o:o+4], 16)) / 100
+            o = (OFFSET_ACCELERATION_Y - OFFSET_TEMPERATURE) * 4
+            y = get_signed_16bit_value(int(data[o:o+4], 16)) / 100
+            o = (OFFSET_ACCELERATION_Z - OFFSET_TEMPERATURE) * 4
+            z = get_signed_16bit_value(int(data[o:o+4], 16)) / 100
+            readout['acceleration'] = {'x': x, 'y': y, 'z': z}
+
+            # humidity (%)
+            o = (OFFSET_HUMIDITY - OFFSET_TEMPERATURE) * 4
+            x = int(data[o:o+4], 16)
+            readout['humidity'] = x
+
+            # atmospheric pressure (hPa)
+            o = (OFFSET_ATMOSPHERIC_PRESSURE - OFFSET_TEMPERATURE) * 4
+            x = int(data[o:o+6], 16) / 100
+            readout['atmospheric-pressure'] = x
+
+        # if data is 1 word (16bit), it is assumed to be a temperature.
+        elif len(data) == (1 * 4):
+            x = get_signed_16bit_value(int(data, 16)) / 10
+            if x >= -20.0 and x <= 75.0:
+                readout['temperature'] = x
 
         aReadout.append((readout['timestamp'], json.dumps(readout, indent=2)))
 

@@ -58,6 +58,12 @@ def argument_parser():
     subparsers = argparser.add_subparsers(dest="command_type", help='commands')
 
     # options
+    #
+    # By default, RFID tags are assumed to be data loggers by LAPIS Technology
+    # and we try to read all relevant data, including temperature (1),
+    # acceleration (3; x,y,z), humidity (1), and atmospheric pressure (1.5),
+    # where (n) means n words (1 word = 16bits), reading 7 consecutive words.
+    #
     argparser.add_argument('-b', '--bank', type=str,
             default=rfid_const.BANK_USER,
             help='bank of tag memory for data')
@@ -74,7 +80,7 @@ def argument_parser():
             default=KEY_DEFAULT,
             help='shared key number between RFID service and clients')
     argparser.add_argument('-l', '--length', type=str,
-            default='1',
+            default='7',
             help='length to read tag memory for data')
     argparser.add_argument('-o', '--offset', type=str,
             default=rfid_const.OFFSET_LAPIS_TEMPERATURE,
