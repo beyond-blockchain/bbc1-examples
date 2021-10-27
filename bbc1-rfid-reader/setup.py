@@ -24,7 +24,8 @@ class MyInstall(install):
 
 
 bbc1_requires = [
-                    'py-bbclib>=1.6'
+                    'py-bbclib>=1.6',
+                    'pyserial>=3.5'
                 ]
 
 bbc1_packages = [
@@ -42,7 +43,7 @@ bbc1_classifiers = [
 
 setup(
     name='bbc1-rfid-reader',
-    version='0.3.1',
+    version='0.3.2',
     description='RFID reader drivers for BBc-1',
     long_description=readme,
     url='https://github.com/beyond-blockchain',
