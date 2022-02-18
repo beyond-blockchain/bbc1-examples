@@ -245,8 +245,11 @@ class SmartRfidReader:
 
         for idTag in aS:
             try:
-                dataTag = self._reader.read_data(idTag, self.data_passwd,
-                        self.data_bank, self.data_offset, self.data_length)
+                if self.data_length != '0':
+                    dataTag = self._reader.read_data(idTag, self.data_passwd,
+                            self.data_bank, self.data_offset, self.data_length)
+                else:
+                    dataTag = ''
 
             except:
                 continue

@@ -43,7 +43,7 @@ bbc1_classifiers = [
 
 setup(
     name='bbc1-rfid-reader',
-    version='0.3.2',
+    version='0.3.3',
     description='RFID reader drivers for BBc-1',
     long_description=readme,
     url='https://github.com/beyond-blockchain',
